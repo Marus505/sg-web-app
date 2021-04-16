@@ -1,0 +1,197 @@
+/**
+* encoding=UTF-8
+**/
+author                    - 작성자
+creationDate            - 작성일자
+package                    - 패키지
+className                - 객체명
+tableName                - 테이블명
+businessEnglishName        - 업무영문명
+businessKoreanName        - 업무한글명
+nameSpace                - 네임스페이스
+
+repositoryPackage            - Repository 패키지
+repositoryClass                - Repository 객체명 (패키지 미포함)
+repositoryClassFull            - Repository 객체명 (패키지 포함)
+
+businessPackage            - Service 패키지
+businessClass            - Service 객체명 (패키지 미포함)
+businessClassFull        - Service 객체명 (패키지 포함)
+
+domainPackage                - Domain 패키지
+domainClass                    - Domain 객체명 (패키지 미포함)
+domainClassFull                - Domain 객체명 (패키지 포함)
+
+parameterTypes            - Parameter Types
+parameterVars            - Parameter Variables
+parameterTypeAndVars    - Parameter Type And Variables
+
+imports                    - 구성 Import 영역 (복수)
+methods                    - 구성 Method 영역 (복수)
+
+throws                    - Method의 Thorws 절
+
+
+
+[CLASS-DEFINE=Type1]
+SOT@package ${package};
+
+${imports}
+
+/**
+ * ${businessKoreanName} 비즈니스 서비스 구현 클래스
+ *
+ * @author ${author}
+ * @since ${creationDate}
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class ${className} {
+
+  private final ${repositoryClass} ${repositoryField};
+
+  /** 등록 데이터를 확인하는 유효성 검사 규칙 */
+  private static final MapValidateRuleSet INSERT_VALIDATION_RULES;
+  /** 수정 데이터를 확인하는 유효성 검사 규칙 */
+  private static final MapValidateRuleSet UPDATE_VALIDATION_RULES;
+
+  static {
+    // 공통 확인 Rules
+    MapValidateRuleSet formRules = MapValidateRuleSet.of()${iterate:variables[
+      .add(MapValidateRule.of("$0", "$1"))]};
+
+    // 등록 확인 Rules
+    INSERT_VALIDATION_RULES = MapValidateRuleSet.of()
+      .addAll(formRules);
+
+    // 수정 확인 Rules
+    UPDATE_VALIDATION_RULES = MapValidateRuleSet.of()
+      .add(MapValidateRule.of("${parameterVars}", "${parameterNames}").notBlank())
+      .addAll(formRules);
+  }
+
+${methods}
+}@EOT
+
+[IMPORT-DEFINE=Type1]
+SOT@import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import kr.co.hbep.core.common.Constants;
+import ${basePackage}.core.common.exception.HbepCommonException;
+import ${basePackage}.core.util.MapUtil;
+import kr.co.hbep.core.util.excel.ExcelBuilder;
+import ${basePackage}.core.util.validator.MapValidateResult;
+import ${basePackage}.core.util.validator.MapValidateRule;
+import ${basePackage}.core.util.validator.MapValidateRuleSet;
+import ${basePackage}.core.util.validator.MapValidator;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+${imports}
+@EOT
+
+[METHOD-DEFINE=Type2]
+SOT@  /**
+   * ${businessKoreanName} 목록 조회
+   *
+   * @param paramMap 검색 조건
+   * @return ${businessKoreanName} 객체 목록
+   */
+  @Transactional(readOnly = true)
+  public List<${domainClass}> list${businessEnglishName}(Map<String, Object> paramMap) {
+    return ${repositoryField}.list${businessEnglishName}(paramMap);
+  }
+@EOT
+
+[METHOD-DEFINE=Type3]
+SOT@  /**
+   * ${businessKoreanName} 목록 엑셀 객체 생성
+   *
+   * @param conditions 검색 조건값
+   * @return ${businessKoreanName} 엑셀 객체
+   */
+  public SXSSFWorkbook generate${businessEnglishName}Excel(Map<String, Object> conditions) {
+    Map<String, Object> paramMap = new HashMap<>();
+    paramMap.put(Constants.PaginationConst.SKIP_PAGING, true);  // 페이징 안함
+    paramMap.put("conditions", conditions);
+    List<${businessEnglishName}> list = ${repositoryField}.list${businessEnglishName}(paramMap);
+    return ExcelBuilder.of()
+      .addSheet(list, "${businessKoreanName}")
+        ${addColumns}
+      .build();
+  }
+@EOT
+
+[METHOD-DEFINE=Type4]
+SOT@  /**
+   * ${businessKoreanName} 상세 조회
+   *
+   * @param ${parameterVars}
+   * @return ${businessKoreanName} 객체
+   */
+  @Transactional(readOnly = true)
+  public ${domainClass} get${businessEnglishName}(${parameterTypeAndVars}) {
+    return ${repositoryField}.get${businessEnglishName}(${parameterVars});
+  }
+@EOT
+
+[METHOD-DEFINE=Type5]
+SOT@  /**
+   * ${businessKoreanName} 등록
+   *
+   * @param ${domainName}
+   * @return int
+   */
+  @Transactional
+  public int insert${businessEnglishName}(${domainClass} ${domainName}) {
+    // 1. 데이터 유효성 확인
+    MapValidateResult validationResult = MapValidator.of(MapUtil.convertObjectToMap(${domainName}))
+            .setRules(INSERT_VALIDATION_RULES)
+            .validate();
+    if (!validationResult.isValid()) {
+        throw new HbepCommonException(validationResult.getErrorMessage());
+    }
+    // 2. ${businessKoreanName} 등록
+    return ${repositoryField}.insert${businessEnglishName}(${domainName});
+  }
+@EOT
+
+[METHOD-DEFINE=Type6]
+SOT@  /**
+   * ${businessKoreanName} 수정
+   *
+   * @param ${domainName}
+   * @return int
+   */
+  @Transactional
+  public int update${businessEnglishName}(${domainClass} ${domainName}) {
+    // 1. 데이터 유효성 확인
+    MapValidateResult validationResult = MapValidator.of(MapUtil.convertObjectToMap(${domainName}))
+            .setRules(UPDATE_VALIDATION_RULES)
+            .validate();
+    if (!validationResult.isValid()) {
+        throw new HbepCommonException(validationResult.getErrorMessage());
+    }
+    // 2. ${businessKoreanName} 수정
+    return ${repositoryField}.update${businessEnglishName}(${domainName});
+  }
+@EOT
+
+[METHOD-DEFINE=Type7]
+SOT@  /**
+   * ${businessKoreanName} 삭제
+   *
+   * @param ${parameterVars}
+   * @return int
+   */
+  @Transactional
+  public int delete${businessEnglishName}(${parameterTypeAndVars}) {
+    return ${repositoryField}.delete${businessEnglishName}(new ${domainClass}(${parameterVars}));
+  }
+@EOT

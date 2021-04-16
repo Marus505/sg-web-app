@@ -1,0 +1,114 @@
+/**
+* encoding=UTF-8
+**/
+author                        - 작성자
+creationDate                - 작성일자
+package                    - 패키지
+className                - 객체명
+tableName                - 테이블명
+businessEnglishName        - 업무영문명
+businessKoreanName        - 업무한글명
+nameSpace                - 네임스페이스
+
+repositoryPackage                - Repository 패키지
+repositoryClass                    - Repository 객체명 (패키지 미포함)
+repositoryClassFull            - Repository 객체명 (패키지 포함)
+
+businessPackage                - Manager 패키지
+businessClass                    - Manager 객체명 (패키지 미포함)
+businessClassFull                - Manager 객체명 (패키지 포함)
+
+domainPackage                - Domain 패키지
+domainClass                    - Domain 객체명 (패키지 미포함)
+domainClassFull                - Domain 객체명 (패키지 포함)
+
+parameterTypes                - Parameter Types
+parameterVars                    - Parameter Variables
+parameterTypeAndVars    - Parameter Type And Variables
+
+imports                        - 구성 Import 영역 (복수)
+methods                    - 구성 Method 영역 (복수)
+
+throws                        - Method의 Throws 절
+
+
+[CLASS-DEFINE=Type1]
+SOT@package ${package};
+
+${imports}
+/**
+ * ${businessKoreanName} Repository 인터페이스
+ *
+ * @author ${author}
+ * @since ${creationDate}
+ */
+@Repository
+public interface ${className} {
+${methods}
+}@EOT
+
+[IMPORT-DEFINE=Type1]
+SOT@import ${basePackage}.core.config.mybatis.annotation.Pageable;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Map;
+
+${imports}
+@EOT
+
+[IMPORT-DEFINE=Type2]
+${imports}
+@EOT
+
+[METHOD-DEFINE=Type1]
+SOT@  /**
+   * ${businessKoreanName} 목록 조회
+   *
+   * @param paramMap 검색 조건
+   * @return ${businessKoreanName} 객체 목록
+   */
+  @Pageable
+  List<${domainClass}> list${businessEnglishName}(Map<String, Object> paramMap);
+@EOT
+
+[METHOD-DEFINE=Type2]
+SOT@  /**
+   * ${businessKoreanName} 상세 조회
+   *
+   * @param ${parameterVars}
+   * @return ${businessKoreanName} 객체
+   */
+  ${domainClass} get${businessEnglishName}(${parameterTypeAndVars});
+@EOT
+
+
+[METHOD-DEFINE=Type3]
+SOT@  /**
+   * ${businessKoreanName} 등록
+   *
+   * @param ${domainName}
+   * @return int
+   */
+  int insert${businessEnglishName}(${domainClass} ${domainName});
+@EOT
+
+[METHOD-DEFINE=Type4]
+SOT@  /**
+   * ${businessKoreanName} 수정
+   *
+   * @param ${domainName}
+   * @return int
+   */
+  int update${businessEnglishName}(${domainClass} ${domainName});
+@EOT
+
+[METHOD-DEFINE=Type5]
+SOT@  /**
+   * ${businessKoreanName} 삭제
+   *
+   * @param ${domainName}
+   * @return int
+   */
+  int delete${businessEnglishName}(${domainClass} ${domainName});
+@EOT

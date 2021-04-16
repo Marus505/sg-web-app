@@ -1,0 +1,57 @@
+/**
+  * encoding=UTF-8
+  **/
+
+
+[SCRIPTLET-DEFINE=scriptlet]
+SOT@<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+@EOT
+
+[DOCTYPE-DEFINE=docType]
+SOT@<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+@EOT
+
+[ROOT-DEFINE=root]
+SOT@<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Admin | ${projectName}</title>
+<script type="text/javascript" src="/js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript">
+function fnList() {
+	$('#detailForm').submit();
+}
+function fnUpdate() {
+	$('#detailForm').attr("action", "/${controllerMapName}/${jspPrefix}UpdateView").submit();
+}
+function fnDelete() {
+	if(!confirm("정말로 삭제하시겠습니까?")) return;
+	$('#detailForm').attr("action", "/${controllerMapName}/${jspPrefix}Delete").submit();
+}
+</script>
+</head>
+<body>
+<form id="detailForm" action="<c:url value='/${controllerMapName}/${jspPrefix}List'/>" method="post">
+	<form:hidden path="vo.pageIndex"/>
+	<form:hidden path="vo.id"/>
+	<form:hidden path="vo.searchCondition" />
+	<form:hidden path="vo.searchKeyword" />
+</form>
+<h1>상세보기</h1>
+<div style="border: solid thin black; width: 900px;">
+	번호 : ${result.id } <br />
+	글쓴이 : ${result.writer } <br />
+	작성일 : ${result.creDt } <br />
+	조회수 : ${result.visit } <br />
+	제목 : ${result.title } <br />
+	내용 : ${result.content }
+</div>
+<div style="width: 900px; text-align: right;">
+<input type="button" value="목록" onclick="fnList();" />
+<input type="button" value="수정" onclick="fnUpdate();" />
+<input type="button" value="삭제" onclick="fnDelete();" />
+</div>
+</body>
+</html>
+@EOT

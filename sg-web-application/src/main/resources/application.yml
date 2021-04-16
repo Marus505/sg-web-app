@@ -1,0 +1,83 @@
+spring:
+
+  profiles:
+    active: local
+
+  output:
+    ansi:
+      enabled: ALWAYS
+
+
+server:
+
+  port: 9090
+
+  error:
+    whitelabel:
+      enabled: false
+
+---
+
+spring:
+  profiles: local
+
+jdbc:
+  database: postgresql
+  driverClassName: org.postgresql.Driver
+  url: jdbc:postgresql://192.168.1.84:5432/hbep_db?currentSchema=hbep
+  username: hbep_user
+  password: gpftmdbwj@0122
+
+project:
+  name: Health Balance Ecommerce Platform
+  base-package: kr.co.hbep
+
+
+
+
+
+#-------------------------------------------------------------------------------
+#
+# 	POSTGRESQL
+#
+#-------------------------------------------------------------------------------
+#database: postgresql
+#driverClassName: org.postgresql.Driver
+#url: jdbc:postgresql://192.168.1.84:5432/hbep_db
+#username: hbep_user
+#password: gpftmdbwj@0122
+
+
+#-------------------------------------------------------------------------------
+#
+# 	ORACLE
+#
+#-------------------------------------------------------------------------------
+#database: oracle
+#driverClassName: oracle.jdbc.OracleDriver
+#url: jdbc:oracle:thin:@172.17.112.101:1526:DB
+#username: WEB
+#password: er12#4
+
+#-------------------------------------------------------------------------------
+#
+# 	MSSQL
+#
+#-------------------------------------------------------------------------------
+#database: mssql
+#driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+#url: jdbc:sqlserver://61.252.139.120:1433;databaseName=winia_svct
+#username: wylie
+#password: P@ssw0rd
+
+
+
+#-------------------------------------------------------------------------------
+# 	MYSQL
+#
+#-------------------------------------------------------------------------------
+#  database: mysql
+#  driverClassName: org.mariadb.jdbc.Driver
+#  url: jdbc:mariadb://45.77.30.75:3306/dokjeja?useFractionalSeconds=true
+#  username: marus
+#  password: sbe90M2%

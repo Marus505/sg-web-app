@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html ng-app="sourceGeneratorApp" lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Source Generator</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="css/select.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="css/custom.css">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/angular.min.js"></script>
+    <script type="text/javascript" src="js/angular-sanitize.min.js"></script>
+    <script type="text/javascript" src="js/angular-cookies.min.js"></script>
+    <script type="text/javascript" src="js/ui-bootstrap-tpls.min.js"></script>
+    <script type="text/javascript" src="js/select.min.js"></script>
+
+    <script type="text/javascript" ng-app="sourceGeneratorApp" th:inline="javascript">
+        /*<![CDATA[*/
+        var sourceGeneratorApp = angular.module('sourceGeneratorApp', ['ngCookies','ui.bootstrap','ui.select','ngSanitize']);
+        // (Directive) element 선택시 내용물 전체 선택
+        sourceGeneratorApp.directive('selectOnClick', ['$window', function ($window) {
+            return {
+                restrict: 'A',
+                link: function (scope, element, attrs) {
+                    element.on('click', function () {
+                        if (!$window.getSelection().toString()) {
+                            // Required for mobile Safari
+                            this.setSelectionRange(0, this.value.length)
+                        }
+                    });
+                }
+            };
+        }]);
+        // (Directive) input 입력시 첫글자는 대문자로
+        sourceGeneratorApp.directive('capitalizeFirst', function($parse) {
+            return {
+                require: 'ngModel',
+                link: function(scope, element, attrs, modelCtrl) {
+                    var capitalize = function(inputValue) {
+                        if (inputValue === undefined) { inputValue = ''; }
+                        var capitalized = inputValue.charAt(0).toUpperCase() +
+                            inputValue.substring(1);
+                        if(capitalized !== inputValue) {
+                            modelCtrl.$setViewValue(capitalized);
+                            modelCtrl.$render();
+                        }
+                        return capitalized;
+                    }
+                    modelCtrl.$parsers.push(capitalize);
+                    capitalize($parse(attrs.ngModel)(scope)); // capitalize initial value
+                }
+            };
+        });
+        // (Directive) input 입력시 대문자로
+        sourceGeneratorApp.directive('capitalize', function($parse) {
+            return {
+                require: 'ngModel',
+                link: function(scope, element, attrs, modelCtrl) {
+                    var capitalize = function(inputValue) {
+                        if (inputValue === undefined) { inputValue = ''; }
+                        var capitalized = inputValue.toUpperCase();
+                        if(capitalized !== inputValue) {
+                            modelCtrl.$setViewValue(capitalized);
+                            modelCtrl.$render();
+                        }
+                        return capitalized;
+                    }
+                    modelCtrl.$parsers.push(capitalize);
+                    capitalize($parse(attrs.ngModel)(scope)); // capitalize initial value
+                }
+            };
+        });
+
+        sourceGeneratorApp.filter('propsFilter', function() {
+            return function(items, props) {
+                var out = [];
+
+                if (angular.isArray(items)) {
+                    var keys = Object.keys(props);
+
+                    items.forEach(function(item) {
+                        var itemMatches = false;
+
+                        for (var i = 0; i < keys.length; i++) {
+                            var prop = keys[i];
+                            var text = props[prop].toLowerCase();
+                            if (item[prop].toString().toLowerCase().indexOf(text) !== -1) {
+                                itemMatches = true;
+                                break;
+                            }
+                        }
+
+                        if (itemMatches) {
+                            out.push(item);
+                        }
+                    });
+                } else {
+                    // Let the output be the input untouched
+                    out = items;
+                }
+
+                return out;
+            };
+        });
+
+        sourceGeneratorApp.controller('SourceGeneratorController', function SourceGeneratorController($scope, $http, $cookies, $uibModal) {
+            var cookieKey = "sourceGeneratorFormData";
+            var _basePackage = /*[[${basePackage}]]*/'test';	// Java 기본 패키지 경로
+            var _projectName = /*[[${projectName}]]*/'test';
+            var _tableNames = /*[(${tableNames})]*/'test';
+
+            $scope.tableNames = _tableNames;
+            //$scope.tableNames = ["HASH", "LOCAL1"];
+            $scope.table = $cookies.getObject(cookieKey + "_table");
+            if(!$scope.table) {
+                $scope.table = {
+                    selected: null
+                }
+            }
+            $scope.formData = $cookies.getObject(cookieKey);
+            if(!$scope.formData) {
+                $scope.formData = {
+                    projectName: _projectName,
+                    author: "",
+                    workspacePath: "C:/Workspace/",
+                    serviceKorean: "",
+                    serviceEnglish: "",
+                    modulePackage: "bo",
+                    tableName: "",
+                    tablePrefix:"",
+                    basePackage: _basePackage,
+                    corePackage: "core",
+                    packageController: "",
+                    classController: "",
+                    packageResource: "",
+                    classResource: "",
+                    packageBizService: "",
+                    classBizService: "",
+                    packageRepository: "",
+                    classRepository: "",
+                    packageDomain: "",
+                    classDomain: ""
+                };
+            }
+            $scope.resultData = { result: false };	// 생성 결과 데이터
+            $scope.targetFileList = [
+                {
+                    typeId: 'sql',
+                    fileType: 'XML',
+                    title: 'SQL Query',
+                    isSelected: true,
+                },
+                {
+                    typeId: 'domain',
+                    fileType: 'JAVA',
+                    title: 'Domain Entity',
+                    isSelected: true,
+                },
+                {
+                    typeId: 'repository',
+                    fileType: 'JAVA',
+                    title: 'Repository Interface',
+                    isSelected: true,
+                },
+                {
+                    typeId: 'service',
+                    fileType: 'JAVA',
+                    title: 'Business Service',
+                    isSelected: true,
+                },
+                {
+                    typeId: 'resource',
+                    fileType: 'JAVA',
+                    title: 'REST API Controller',
+                    isSelected: true,
+                },
+                /*{
+                    typeId: 'controller',
+                    fileType: 'JAVA',
+                    title: 'Controller'
+                },*/
+            ];
+
+            // (Watch) $scope.formData
+            $scope.$watch('formData', function(newValue, oldValue) {
+
+                if(newValue.serviceEnglish && newValue.serviceEnglish.length > 0) {
+                    newValue.classController = newValue.serviceEnglish + "Controller";
+                    newValue.classBizService = newValue.serviceEnglish + "Service";
+                    newValue.classRepository = newValue.serviceEnglish + "Repository";
+                    newValue.classDomain = newValue.serviceEnglish;
+
+                    newValue.packageController = newValue.basePackage + "." + newValue.modulePackage + ".controller";
+                    newValue.packageBizService = newValue.basePackage + "." + newValue.corePackage + ".service";
+                    newValue.packageRepository = newValue.basePackage + "." + newValue.corePackage + ".repository";
+                    newValue.packageDomain = newValue.basePackage + "." + newValue.corePackage + ".domain";
+                } else {
+                    newValue.classController = null;
+                    newValue.classBizService = null;
+                    newValue.classRepository = null;
+                    newValue.classDomain = null;
+
+                    newValue.packageController = null;
+                    newValue.packageBizService = null;
+                    newValue.packageRepository = null;
+                    newValue.packageDomain = null;
+                }
+            }, true);
+
+            // (Function) 레이어 팝업 경고창
+            $scope.fnAlert = function(msg) {
+                var modalInstance = $uibModal.open({
+                    animation: true,
+                    size: 'lg',
+                    templateUrl: 'alertPopupTemplate.html',
+                    controller: function($scope, $uibModalInstance, msg) {
+                        $scope.msgArray = msg.split("<br />");
+                        $scope.ok = function () {
+                            $uibModalInstance.dismiss('cancel');
+                        };
+                    },
+                    resolve: {
+                        msg: function () {
+                            return msg;
+                        }
+                    }
+                });
+            }
+
+            // (Function) 쿠키 생성
+            $scope.fnPutCookie = function() {
+                $cookies.putObject(cookieKey, $scope.formData);
+                $cookies.putObject(cookieKey + '_table', $scope.table);
+            }
+
+            // (Function) 모든 소스 생성
+            $scope.fnGenerateAll = function(isValid) {
+                $scope.fnPutCookie();
+                // console.log($scope.table.selected);
+                $scope.formData.tableName = $scope.table.selected;
+                if(isValid) {
+                    $http({
+                        method: 'POST',
+                        url: "/sourceGeneratorResult",
+                        data: $scope.formData
+                    }).success(function(data, status) {
+                        if(data.result == "no-permit") {
+                            $scope.fnAlert("다시 로그인 해주세요.");
+                        } else {
+                            $scope.resultData = angular.copy(data);
+                            for(var i=0;i<$scope.targetFileList.length;i++) {
+                                var clientObj = $scope.targetFileList[i];
+                                var resultObj = $scope.resultData.targetFileList[i];
+                                if(resultObj) {
+                                    clientObj.resultPath = resultObj.resultPath;
+                                    clientObj.resultName = resultObj.resultName;
+                                    clientObj.resultSource = resultObj.resultSource;
+                                }
+                            }
+                        }
+                    }).error(function(data, status) {
+                        // error
+                        $scope.fnAlert("오류가 발생하였습니다.");
+                    });
+                } else {
+                    $scope.fnAlert("입력되지 않은 값이 있습니다.");
+                }
+            }
+
+            // (Function) 소스 파일 생성 팝업 열기
+            $scope.fnOpenGenerateFilePopup = function() {
+                var modalInstance = $uibModal.open({
+                    animation: true,
+                    templateUrl: 'generateFilePopupTemplate.html',
+                    controller: function($scope, $uibModalInstance, targetFileList, fnGenerateFile, fnAlert) {
+                        $scope.isComplete = false;
+                        $scope.targetFileList = targetFileList;
+                        $scope.fnGenerateFile = fnGenerateFile;
+                        $scope.fnAlert = fnAlert;
+
+                        $scope.ok = function () {
+                            var isValid = false;
+                            for(var i=0;i<$scope.targetFileList.length;i++) {
+                                if($scope.targetFileList[i].isSelected) {
+                                    isValid = true;
+                                    break;
+                                }
+                            }
+                            if(isValid) {
+                                $scope.isComplete = true;
+                                for (var i = 0; i < $scope.targetFileList.length; i++) {
+                                    var item = $scope.targetFileList[i]
+                                    delete item.isSuccess;
+                                    if (item.isSelected == true) {
+                                        $scope.fnGenerateFile(i).then(function successCallback(response) {
+                                            var result = "F";
+                                            if (response.data.result == 'success') {
+                                                result = "S"
+                                            } else if (response.data.result == 'exist') {
+                                                result = "X"
+                                            }
+                                            $scope.targetFileList[response.data.sourceNo].isSuccess = result;
+                                        }, function errorCallback() {
+                                            $scope.fnAlert("오류가 발생하였습니다.");
+                                        });
+                                    }
+                                }
+                            } else {
+                                $scope.fnAlert("1개 이상의 소스 파일을 선택해 주세요.");
+                            }
+                        };
+
+                        $scope.cancel = function () {
+                            $uibModalInstance.dismiss('cancel');
+                        };
+                    },
+                    resolve: {
+                        targetFileList: function () {
+                            return angular.copy($scope.targetFileList);
+                        },
+                        fnGenerateFile: function () {
+                            return $scope.fnGenerateFile;
+                        },
+                        fnAlert: function () {
+                            return $scope.fnAlert;
+                        }
+                    }
+                });
+            }
+
+            // (Function) 워크스페이스에 해당 소스 파일 생성(버튼 클릭시 호출)
+            $scope.fnGenerateFileOne = function(typeNum) {
+                $scope.fnGenerateFile(typeNum).then(function successCallback(response) {
+                    if(response.data.result == 'success') {
+                        $scope.fnAlert("소스 파일 생성이 성공하였습니다.<br />경로: " + response.data.sourceFullPath);
+                    } else if(response.data.result == 'exist') {
+                        $scope.fnAlert("이미 워크스페이스에 존재하는 소스 파일입니다.");
+                    } else {
+                        $scope.fnAlert("오류가 발생하였습니다.");
+                    }
+                }, function errorCallback() {
+                    // error
+                    $scope.fnAlert("오류가 발생하였습니다.");
+                });
+            }
+
+            // (Function) 워크스페이스에 해당 소스 파일 생성
+            $scope.fnGenerateFile = function(typeNum) {
+                var workspacePath = $scope.formData.workspacePath;
+                if(!workspacePath || workspacePath.length < 1) {
+                    $scope.fnAlert("Workspace Path를 입력해 주세요.");
+                } else {
+                    if(workspacePath.lastIndexOf("/") != workspacePath.length - 1) {
+                        workspacePath += "/";
+                    }
+                    if($scope.targetFileList[typeNum].resultPath && $scope.targetFileList[typeNum].resultName && $scope.targetFileList[typeNum].resultSource) {
+                        return $http({
+                            method: 'POST',
+                            url: "/sourceGeneratorFile",
+                            data: {
+                                sourceNo: typeNum,
+                                sourcePath: workspacePath + $scope.targetFileList[typeNum].resultPath,
+                                sourceName: $scope.targetFileList[typeNum].resultName,
+                                sourceText: $scope.targetFileList[typeNum].resultSource
+                            }
+                        });
+                    } else {
+                        $scope.fnAlert("먼저 소스 생성부터 해주세요.");
+                    }
+                }
+            }
+        });
+        /*]]>*/
+    </script>
+</head>
+<body ng-controller="SourceGeneratorController as ctrl">
+<script type="text/ng-template" id="alertPopupTemplate.html">
+    <div class="modal-body">
+        <p ng-repeat="item in msgArray">
+            {{ item }}
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="ok()">OK</button>
+    </div>
+</script>
+<script type="text/ng-template" id="generateFilePopupTemplate.html">
+    <div class="modal-header">
+        <h3 class="modal-title">Generate in Workspace (All Source)</h3>
+    </div>
+    <div class="modal-body">
+        <p ng-hide="isComplete">
+            Please select generate target.
+        </p>
+        <p ng-show="isComplete">
+            Generate result.
+        </p>
+        <ul>
+            <li ng-repeat="item in targetFileList track by $index">
+                <label style="font-size: 16px; cursor: pointer;">
+                    <input type="checkbox" ng-model="item.isSelected" ng-hide="isComplete" />
+                    <small>
+                        <span class="label" ng-class="{ 'label-default': item.fileType == 'XML', 'label-primary': item.fileType == 'JAVA', 'label-success': item.fileType == 'HTML', 'label-danger': item.fileType == 'JS' }">{{ item.fileType }}</span>
+                    </small>
+                    {{ item.title }}
+                </label>
+                <span class="text-success" ng-show="item.isSuccess == 'S'">
+					<span>. . . . . . </span><i class="fa fa-check" aria-hidden="true"></i> Success
+				</span>
+                <span class="text-muted" ng-show="item.isSuccess == 'X'">
+					<span>. . . . . . </span><i class="fa fa-exclamation" aria-hidden="true"></i> Already Exist
+				</span>
+                <span class="text-danger" ng-show="item.isSuccess == 'F'">
+					<span>. . . . . . </span><i class="fa fa-ban" aria-hidden="true"></i> Fail
+				</span>
+            </li>
+        </ul>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="ok()" ng-hide="isComplete">Generate!</button>
+        <button class="btn btn-danger" type="button" ng-click="cancel()">Close Popup</button>
+    </div>
+</script>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-3 sidebar">
+            <h2 style="margin-top: 0;"><i class="fa fa-cogs" aria-hidden="true"></i> Source Generator <small>for HBEP</small></h2>
+            <hr />
+            <form name="form1">
+                <div class="form-group">
+                    <label class="control-label" for="projectName">Project Name</label>
+                    <input type="text" class="form-control" id="projectName" name="projectName" ng-model="formData.projectName">
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="author">Author</label>
+                    <input type="text" class="form-control" id="author" name="author" ng-model="formData.author">
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="workspacePath">Workspace Path</label>
+                    <input type="text" class="form-control" id="workspacePath" name="workspacePath" ng-model="formData.workspacePath">
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="modulePackage"><span class="text-danger">*</span> Module Name</label>
+                    <input type="text" class="form-control" id="modulePackage" name="modulePackage" ng-model="formData.modulePackage" ng-required="true">
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="serviceKorean"><span class="text-danger">*</span> Service Korean Name</label>
+                    <input type="text" class="form-control" id="serviceKorean" name="serviceKorean" ng-model="formData.serviceKorean" ng-required="true">
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="serviceEnglish"><span class="text-danger">*</span> Service English Name</label>
+                    <input type="text" class="form-control" id="serviceEnglish" name="serviceEnglish" ng-model="formData.serviceEnglish" capitalize-first>
+                </div>
+                <div class="form-group">
+                    <label class="control-label"><span class="text-danger">*</span> Table Name</label>
+                    <p>Selected: {{table.selected}}</p>
+                    <ui-select ng-model="table.selected" append-to-body="true">
+                        <ui-select-match>
+                            <span ng-bind="$select.selected" placeholder="Enter a table"></span>
+                        </ui-select-match>
+                        <ui-select-choices repeat="data in (tableNames | filter: $select.search)">
+                            <span ng-bind="data"></span>
+                        </ui-select-choices>
+                    </ui-select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="tablePrefix">Table Prefix</label>
+                    <input type="text" class="form-control" id="tablePrefix" name="tablePrefix" ng-model="formData.tablePrefix">
+                </div>
+            </form>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-9 col-md-offset-3 main">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <h4 class="subTitle">(Java Package & Class Preview)</h4>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Domain Entity</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="formData.packageDomain" readonly />
+                    </div>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control"  ng-model="formData.classDomain" readonly />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Repository Interface</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="formData.packageRepository" readonly />
+                    </div>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control"  ng-model="formData.classRepository" readonly />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Business Service</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="formData.packageBizService" readonly />
+                    </div>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control"  ng-model="formData.classBizService" readonly />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Controller</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" ng-model="formData.packageController" readonly />
+                    </div>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control"  ng-model="formData.classController" readonly />
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 20px;">
+                    <div class="col-sm-12">
+                        <button type="button" class="btn btn-block btn-primary" ng-click="fnGenerateAll(form1.$valid)">↓↓↓ Click to Generate (All Source) ↓↓↓</button>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 20px;" ng-if="resultData.result">
+                    <div class="col-sm-12">
+                        <button type="button" class="btn btn-block btn-success" ng-click="fnOpenGenerateFilePopup()">Generate in Workspace (All Source)</button>
+                    </div>
+                </div>
+            </div>
+            <section ng-if="resultData.result" ng-repeat="item in targetFileList track by $index">
+                <hr />
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <div class="col-sm-8">
+                            <h2 class="subTitle">
+								<span>
+									<span class="label" ng-class="{ 'label-default': item.fileType == 'XML', 'label-primary': item.fileType == 'JAVA', 'label-success': item.fileType == 'HTML', 'label-danger': item.fileType == 'JS' }">{{ item.fileType }}</span>
+								</span>
+                                {{ item.title }}
+                            </h2>
+                        </div>
+                        <div class="col-sm-4">
+                            <button type="button" class="btn btn-block btn-success" ng-click="fnGenerateFileOne($index)">Generate in Workspace</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="path_{{ item.typeId }}" class="col-sm-1 control-label">Path</label>
+                        <div class="col-sm-11">
+                            <input type="text" class="form-control" id="path_{{ item.typeId }}" ng-model="item.resultPath" readonly select-on-click />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="name_{{ item.typeId }}" class="col-sm-1 control-label">Name</label>
+                        <div class="col-sm-11">
+                            <input type="text" class="form-control" id="name_{{ item.typeId }}" ng-model="item.resultName" readonly select-on-click />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="source_{{ item.typeId }}" class="col-sm-1 control-label">Source</label>
+                        <div class="col-sm-11">
+                            <textarea class="form-control" rows="10" id="source_{{ item.typeId }}" ng-model="item.resultSource" readonly select-on-click></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

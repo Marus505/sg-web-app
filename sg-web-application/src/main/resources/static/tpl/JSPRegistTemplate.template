@@ -1,0 +1,64 @@
+/**
+  * encoding=UTF-8
+  **/
+
+
+[SCRIPTLET-DEFINE=scriptlet]
+SOT@<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+@EOT
+
+[DOCTYPE-DEFINE=docType]
+SOT@<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+@EOT
+
+[ROOT-DEFINE=root]
+SOT@<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Admin | ${projectName}</title>
+<style type="text/css">
+.wp95 {
+	width: 95%;
+}
+.wp70 {
+	width: 70%;
+}
+</style>
+<script type="text/javascript" src="/js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript">
+function fnSubmit() {
+	$('#registForm').submit();
+}
+</script>
+</head>
+<body>
+<form action="<c:url value='/${controllerMapName}/${jspPrefix}Regist' />" method="post" id="registForm">
+<table width="900" border="1">
+<colgroup>
+	<col width="100">
+	<col width="800">
+</colgroup>
+<tr>
+	<td>글쓴이</td>
+	<td><input type="text" name="writer" class="wp70" /><form:errors path="vo.writer" /></td>
+</tr>
+<tr>
+	<td>아이디</td>
+	<td><input type="text" name="creId"  class="wp70" /><form:errors path="vo.creId" /></td>
+</tr>
+<tr>
+	<td>제목</td>
+	<td><input type="text" name="title"  class="wp70" /><form:errors path="vo.title" /></td>
+</tr>
+<tr>
+	<td colspan="2" style="text-align: right;">
+		<input type="button" value="저장" onclick="fnSubmit();" />
+		<input type="button" value="목록" onclick="fnList();" />
+	</td>
+</tr>
+</table>
+</form>
+</body>
+</html>
+@EOT

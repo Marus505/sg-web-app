@@ -1,0 +1,78 @@
+/**
+  * encoding=UTF-8
+  **/
+[ROOT-DEFINE=root]
+SOT@var searchForm = {pageIndex:1 , recordCountPerPage : 10};
+
+var myApp = angular.module('myApp', [
+                                     'ui.router',                   // Routing
+                                     'oc.lazyLoad',                 // ocLazyLoad
+                                     'ui.bootstrap',                // Ui Bootstrap
+                                     'ngLoadingSpinner',            // angular-loading-spinner
+                                     'bwcommon'						// 본웨딩 Common Module
+                                     ]);
+
+myApp.config(function($stateProvider, $urlRouterProvider, $ocLazyLoadProvider, $injector) {
+
+	$urlRouterProvider.otherwise( function($injector) {
+        var $state = $injector.get("$state");
+        $state.go("${jspPrefix}.list");
+    });
+
+	$ocLazyLoadProvider.config({
+		// Set to true if you want to see what and when is dynamically loaded
+		debug: false
+	});
+
+	$stateProvider
+
+	.state('${jspPrefix}', {
+		abstract: true,
+		views:{
+			'':{
+				templateUrl: "/js/common/html/content.html"
+			},
+			'toparea@${jspPrefix}' : {
+				templateUrl : "/js/common/html/toparea.html",
+				controller : "topareaController"
+			},
+			'quickmenu@${jspPrefix}' : {
+				templateUrl : "/js/common/html/quickmenu.html",
+				controller : "quickmenuController"
+			},
+			'footer@${jspPrefix}' : {
+				templateUrl : "/js/common/html/footer.html",
+				controller : "footerController"
+			}
+		}
+			
+	})
+	.state('${jspPrefix}.list', {
+		url : '/list',
+		data: { pageTitle: '${moduleKorean}' },
+		templateUrl : '/js/${jspPrefix}/html/${jspPrefix}List.html',
+		controller  : '${jspPrefix}ListController'
+	});
+	/*
+	사용을 원할 경우 주석을 풀고 사용하세요.
+	.state('${jspPrefix}.view', {
+		url : '/view/:idx',
+		data: { pageTitle: '${moduleKorean}' },
+		templateUrl:'/js/${jspPrefix}/html/${jspPrefix}View.html',
+		resolve : {
+			detail:function($http, $stateParams){
+				return $http({
+					method: 'POST',
+					url: '/${controllerMapName}/${jspPrefix}View.do',
+					data: {idx:$stateParams.idx},
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				}); 
+			}
+		},
+		controller: '${jspPrefix}ViewController'
+	});
+	*/
+});
+@EOT

@@ -1,0 +1,9 @@
+/**
+  * encoding=UTF-8
+  **/
+
+[ROOT-DEFINE=root]
+SOT@
+jsp의 body에 id값 확인해서 넣어주시고,
+퍼블리싱 소스에서 <article> 부분을 잘라서 넣으세요.
+@EOT

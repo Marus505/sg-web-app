@@ -1,0 +1,103 @@
+/**
+* encoding=UTF-8
+**/
+author                        - 작성자
+creationDate                - 작성일자
+package                    - 패키지
+className                - 객체명
+tableName                - 테이블명
+businessEnglishName        - 업무영문명
+businessKoreanName        - 업무한글명
+nameSpace                - 네임스페이스
+
+repositoryPackage                - Repository 패키지
+repositoryClass                    - Repository 객체명 (패키지 미포함)
+repositoryClassFull            - Repository 객체명 (패키지 포함)
+
+businessPackage                - Manager 패키지
+businessClass                    - Manager 객체명 (패키지 미포함)
+businessClassFull                - Manager 객체명 (패키지 포함)
+
+domainPackage                - Domain 패키지
+domainClass                    - Domain 객체명 (패키지 미포함)
+domainClassFull                - Domain 객체명 (패키지 포함)
+
+parameterTypes                - Parameter Types
+parameterVars                    - Parameter Variables
+parameterTypeAndVars    - Parameter Type And Variables
+
+imports                        - 구성 Import 영역 (복수)
+methods                    - 구성 Method 영역 (복수)
+
+throws                        - Method의 Thorws 절
+
+[CLASS-DEFINE=Type1]
+SOT@package ${package};
+
+${imports}
+/**
+ * ${businessKoreanName} Domain 클래스
+ *
+ * @author ${author}
+ * @since ${creationDate}
+ */
+@Alias("${domainAlias}")
+@Data
+@EqualsAndHashCode(callSuper=false)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@NoArgsConstructor
+public class ${className} extends Base implements Serializable {
+
+  private static final long serialVersionUID = 1L;
+${fields}
+  public ${className}(${parameterTypeAndVars}) {
+    this.${parameterVars} = ${parameterVars};
+  }
+
+}@EOT
+
+
+[IMPORT-DEFINE=Type1]
+SOT@import com.fasterxml.jackson.annotation.JsonInclude;
+import ${basePackage}.core.common.Base;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import org.apache.ibatis.type.Alias;
+import java.io.Serializable;
+
+${imports}
+@EOT
+
+
+[IMPORT-DEFINE=Type2]
+SOT@${imports}
+@EOT
+
+
+[FIELD-DEFINE=Type1]
+
+SOT@${iterate:fields[$3
+  private $0 $1;
+]}@EOT
+
+[METHOD-DEFINE=Type1]
+SOT@${iterate:methods[  /**$3
+   * @param $1 as $0
+   */
+  public void set$2($0 $1) {
+      this.$1 = $1;
+  }
+
+  /**$4
+   * @return $0
+   */
+  public $0 get$2() {
+      return this.$1;
+  }
+
+]}@EOT
+
+[METHOD-DEFINE=Type2]
+SOT@
+@EOT

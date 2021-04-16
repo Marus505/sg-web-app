@@ -1,0 +1,147 @@
+/**
+  * encoding=UTF-8
+  **/
+
+
+[SCRIPTLET-DEFINE=scriptlet]
+SOT@<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+@EOT
+
+[DOCTYPE-DEFINE=docType]
+SOT@<!DOCTYPE html>
+@EOT
+
+[ROOT-DEFINE=root]
+SOT@<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+	<title>Admin | ${projectName}</title>
+	<c:import url="/include.managerHeader.sp" charEncoding="UTF-8"></c:import>
+
+	<script type="text/javascript">
+		$(document).ready(function(){
+			fnValidate("updateForm");
+		});
+
+		function fnSubmit() {
+			fnModalConfirm("등록 확인","정말로 등록하시겠습니까?",
+				function() {
+					$('#updateForm').attr("action", "<c:url value='/${controllerMapName}/${jspPrefix}Regist' />").submit();
+				}
+			);
+		}
+		function fnUpdate() {
+			fnModalConfirm("수정 확인","정말로 수정하시겠습니까?",
+				function() {
+					$('#updateForm').attr("action", "<c:url value='/${controllerMapName}/${jspPrefix}Update' />").submit();
+				}
+			);
+		}
+		function fnDelete() {
+			fnModalConfirm("삭제 확인","정말로 삭제하시겠습니까?",
+				function() {
+					$('#updateForm').attr("action", "<c:url value='/${controllerMapName}/${jspPrefix}Delete' />").submit();
+				}
+			);
+		}
+
+		function fnList() {
+			$('#listForm').attr("action", "<c:url value='/${controllerMapName}/${jspPrefix}List' />").submit();
+		}
+	</script>
+</head>
+
+<body class="theme-dark">
+
+	<c:import url="/include.managerGnb.sp" charEncoding="UTF-8"></c:import>
+
+	<div id="container">
+		<c:import url="/include.managerLnb.sp" charEncoding="UTF-8"></c:import>
+
+		<div id="content">
+
+			<form id="listForm" action="<c:url value='/${controllerMapName}/${jspPrefix}List' />" method="post">
+				<form:hidden path="vo.pageIndex"/>
+				<c:forEach var="item" items="${vo.searchInfo }" varStatus="status">
+					<c:forEach var="map" items="${item }">
+						<input type="hidden" name="searchInfo[${status.index }]['${map.key }']" value="${map.value }" />
+					</c:forEach>
+				</c:forEach>
+			</form>
+
+			<div class="container">
+				<!-- Breadcrumbs line -->
+					<c:import url="/include.managerBreadCrumb.sp" charEncoding="UTF-8"></c:import>
+				<!-- /Breadcrumbs line -->
+
+				<!--=== Page Header ===-->
+				<div class="page-header">
+					<div class="page-title">
+						<h3>2Depth</h3>
+					</div>
+				</div>
+				<!-- /Page Header -->
+				<!-- page-content -->
+				<div class="page-content">
+					<div class="row">
+						<!--=== Horizontal Forms ===-->
+						<div class="col-md-12">
+							<div class="widget box">
+								<div class="widget-content">
+									<form class="form-horizontal row-border" action="<c:url value='/${controllerMapName}/${jspPrefix}Update' />" method="post" id="updateForm" name="updateForm">
+											<form:hidden path="vo.pageIndex"/>
+
+										<div class="form-group">
+											<label class="col-md-2 control-label">SelectBox :</label>
+											<div class="col-md-10">
+												<div class="col-md-2 type0">
+													<amcui:commonCode type="selectbox" pathNm="" classNm="form-control" codeVal="A01001" size="150" setVal="" headerName="--전체--" headerVal="" target="common"/>
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<label class="col-md-2 control-label">Input Text :</label>
+											<div class="col-md-10">
+												<input class="form-control input-large" type="text" value="" name=""/><%--<form:errors path="vo.subject" /> --%>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<label class="col-md-2 control-label">Text :</label>
+											<div class="col-md-10"><span class="txt"></span></div>
+										</div>
+
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- widget -->
+					<!-- btn -->
+					<div class="btn-right">
+					<c:if test="${empty result.Idx || result.Idx eq 0 }"> <!-- 등록 -->
+						<button class="btn btn-sm btn-success" onclick="fnSubmit();" type="button">등록</button>
+					</c:if>
+					<c:if test="${!empty result.Idx && result.Idx ne 0 }"> <!-- 수정 -->
+						<button class="btn btn-sm btn-success" onclick="fnUpdate();" type="button">수정</button>
+						<button class="btn btn-sm btn-danger" onclick="fnDelete();" type="button">삭제</button>
+					</c:if>
+						<button class="btn btn-sm btn-inverse" onclick="fnList();" type="button">목록</button>
+					</div>
+					<!-- /btn -->
+				</div>
+				<!-- /page-content -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.content -->
+	</div>
+	<!-- /#container -->
+
+
+</body>
+</html>
+@EOT

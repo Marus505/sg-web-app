@@ -1,0 +1,129 @@
+/**
+  * encoding=UTF-8
+  **/
+
+
+[XML-DEFINE=xml]
+SOT@<?xml version="1.0" encoding="${encode}"?>
+@EOT
+
+[DOCTYPE-DEFINE=docType]
+SOT@<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+@EOT
+
+[ROOT-DEFINE=root]
+SOT@<!--
+    ${title} SQL Mapper
+
+    @author ${author}
+    @since ${created}
+ -->
+<mapper namespace="${namespace}">
+${nodes}
+</mapper>@EOT
+
+[NODE-DEFINE=resultMap]
+SOT@  <resultMap id="simple${businessName}Result" type="${parameterClass}">
+    ${resultMap}
+  </resultMap>
+@EOT
+
+[NODE-DEFINE=defaultSelectClause]
+SOT@  <sql id="defaultSelectClause">${defaultSelectClause}</sql>
+@EOT
+
+[NODE-DEFINE=selectList]
+SOT@  <!--
+      ${title} 목록 조회
+
+      @author ${author}
+      @since ${created}
+   -->
+  <select id="list${businessName}" resultMap="simple${businessName}Result">
+    /* ${namespace}.list${businessName} */
+    <include refid="defaultSelectClause"/>
+    ${query}
+  </select>
+@EOT
+
+[[NODE-DEFINE=select]
+SOT@  <!--
+      ${title} 상세 조회
+
+      @author ${author}
+      @since ${created}
+   -->
+  <select id="get${businessName}" resultMap="simple${businessName}Result">
+     /* ${namespace}.get${businessName} */
+     <include refid="defaultSelectClause"/>
+     ${query}
+  </select>
+@EOT
+
+[NODE-DEFINE=selectCount]
+SOT@  <!--
+      ${title} 개수 조회
+
+      @author ${author}
+      @since ${created}
+   -->
+  <select id="count${businessName}" resultType="int">
+     /* ${namespace}.list${businessName}Cnt */
+     ${query}
+  </select>
+@EOT
+
+[NODE-DEFINE=insert]
+SOT@  <!--
+      ${title} 등록
+
+      @author ${author}
+      @since ${created}
+   -->
+  <insert id="insert${businessName}">
+    /* ${namespace}.insert${businessName} */
+    ${query}
+  </insert>
+@EOT
+
+[NODE-DEFINE=update]
+SOT@  <!--
+      ${title} 수정
+
+      @author ${author}
+      @since ${created}
+   -->
+  <update id="update${businessName}">
+    /* ${namespace}.update${businessName} */
+    ${query}
+  </update>
+@EOT
+
+[NODE-DEFINE=updateDelete]
+SOT@  <!--
+      ${title} 삭제
+
+      @author ${author}
+      @since ${created}
+   -->
+  <update id="delete${businessName}">
+    /* ${namespace}.delete${businessName}*/
+    ${query}
+  </update>
+@EOT
+
+[NODE-DEFINE=delete]
+SOT@  <!--
+      ${title} 삭제
+
+      @author ${author}
+      @since ${created}
+   -->
+  <delete id="delete${businessName}">
+    /* ${namespace}.delete${businessName}*/
+    ${query}
+  </delete>
+@EOT
+
+[NODE-DEFINE=Type4]
+SOT@      <include refid="${refid}"/>@EOT

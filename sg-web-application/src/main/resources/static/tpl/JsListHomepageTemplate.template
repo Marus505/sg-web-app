@@ -1,0 +1,37 @@
+/**
+  * encoding=UTF-8
+  **/
+[ROOT-DEFINE=root]
+SOT@myApp.controller('${jspPrefix}ListController', function($scope, $http, $state, $timeout){
+	
+	function listCall(form){
+		
+		//검색을 통해 들어오면 form 값이 존재하여 form 값을 저장하고 검색한다.
+		//form 값이 없으면 페이지이동, 상세보기, 신규 등을 통한 액션이므로 기존 form 저장값을 사용하여 검색한다.
+		if(form){
+			searchForm = form;
+			searchForm.pageIndex = $scope.pageIndex;
+		}else{
+			$scope.form = angular.copy(searchForm);
+		}
+		
+		$http({
+			method: 'POST',
+			url: '/${controllerMapName}/${jspPrefix}List.do',
+			data: searchForm,
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		})
+		.success(function(data, status) {
+			$scope.list = data.list;
+			$scope.totalCount = data.totalCount;
+			$scope.pageIndex = searchForm.pageIndex;
+		})
+		.error(function(data, status) {
+			alert("데이터조회를 실패하였습니다."); 
+		});
+	};
+	listCall();
+});
+@EOT

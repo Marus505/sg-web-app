@@ -1,0 +1,57 @@
+/**
+  * encoding=UTF-8
+  **/
+[ROOT-DEFINE=root]
+SOT@
+
+'use strict';
+
+angular.module('app.${jspPrefix}').controller('${jspPrefix}ListController', function ($scope, $http, $state, searchForm) {
+
+	$scope.form = searchForm;
+
+	function listCall(){
+		//검색을 통해 들어오면 form 값이 존재하여 form 값을 저장하고 검색한다.
+		//form 값이 없으면 페이지이동, 상세보기, 신규 등을 통한 액션이므로 기존 form 저장값을 사용하여 검색한다.
+		
+		$http({
+			method: 'POST',
+			url: '/${controllerMapName}/${jspPrefix}List.do',
+			data: $scope.form
+		})
+		.success(function(data, status) {
+			$scope.list = data.list;
+			$scope.totalCount = data.totalCount;
+			$scope.pageIndex = $scope.form.pageIndex;
+		})
+		.error(function(data, status) {
+			$scope.salert("데이터조회를 실패하였습니다.")
+		});
+	};
+	listCall();
+	
+	
+	$scope.goInsert = function() {
+		$state.go("app.${jspPrefix}.insert");
+	}
+	
+	$scope.pageChange = function(){
+		if($scope.form.pageIndex != $scope.pageIndex){
+			$scope.form.pageIndex = $scope.pageIndex;
+			listCall();
+		}
+	};
+	
+	$scope.getList = function(){
+		$scope.form.pageIndex = 1;
+		listCall();
+	};
+	
+	
+	// 상세보기
+	$scope.detailView = function(id){
+		$state.go("app.${jspPrefix}.view",{idx:id});
+	};
+	
+});
+@EOT

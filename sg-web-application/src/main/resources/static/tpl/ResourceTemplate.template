@@ -1,0 +1,162 @@
+/**
+* encoding=UTF-8
+**/
+author                        - 작성자
+creationDate                - 작성일자
+package                    - 패키지
+className                - 객체명
+tableName                - 테이블명
+businessEnglishName        - 업무영문명
+businessKoreanName        - 업무한글명
+nameSpace                - 네임스페이스
+
+repositoryPackage                - Repository 패키지
+repositoryClass                    - Repository 객체명 (패키지 미포함)
+repositoryClassFull            - Repository 객체명 (패키지 포함)
+
+businessPackage                - Service 패키지
+businessClass                    - Service 객체명 (패키지 미포함)
+businessClassFull                - Service 객체명 (패키지 포함)
+
+domainPackage                - Domain 패키지
+domainClass                    - Domain 객체명 (패키지 미포함)
+domainClassFull                - Domain 객체명 (패키지 포함)
+
+parameterTypes                - Parameter Types
+parameterVars                    - Parameter Variables
+parameterTypeAndVars    - Parameter Type And Variables
+
+imports                        - 구성 Import 영역 (복수)
+methods                    - 구성 Method 영역 (복수)
+
+throws                        - Method의 Throws 절
+
+resourceMapName            - RESOURCE 맵 이름
+
+
+[CLASS-DEFINE=Type1]
+SOT@package ${package};
+
+${imports}
+
+/**
+ * ${businessKoreanName} 컨트롤러 클래스 - REST API
+ *
+ * @author ${author}
+ * @since ${creationDate}
+ */
+@Slf4j
+@RestController
+@RequestMapping("${resourceMapName}")
+@RequiredArgsConstructor
+public class ${className} extends BaseRestController {
+
+  private final ${businessClass} ${businessField};
+
+${methods}
+}@EOT
+
+[IMPORT-DEFINE=Type1]
+SOT@import ${basePackage}.core.common.BaseRestController;
+import ${basePackage}.core.util.PaginationUtil;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+${imports}
+@EOT
+
+[METHOD-DEFINE=Type1]
+SOT@  /**
+   * [GET] ${businessKoreanName} 목록 조회
+   *
+   * @param paramMap 검색 인자값
+   * @param conditions 검색 조건값
+   * @return ${businessKoreanName} 객체 목록
+   */
+  @GetMapping
+  public ResponseEntity<List<${domainClass}>> list${businessEnglishName}(
+    @RequestParam Map<String, Object> paramMap,
+    @RequestParam(value = "conditions", required = false) Map<String, Object> conditions
+  ) {
+   paramMap.put("conditions", conditions);
+   List<${domainClass}> list = ${businessField}.list${businessEnglishName}(paramMap);
+   HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders();
+   return createResponseEntity(true, headers, list);
+  }
+@EOT
+
+[METHOD-DEFINE=Type2]
+SOT@  /**
+   * [GET] ${businessKoreanName} 목록 엑셀 다운로드
+   *
+   * @param conditions 검색 조건값
+   * @return ${businessKoreanName} 목록 엑셀 파일
+   */
+  @GetMapping(value = "/excel/download")
+  public ResponseEntity<byte[]> download${businessEnglishName}Excel(
+    @RequestParam(value = "conditions", required = false) Map<String, Object> conditions
+  ) throws IOException {
+    return createResponseEntityForExcel(${businessField}.generate${businessEnglishName}Excel(conditions), "${businessKoreanName}");
+  }
+@EOT
+
+[METHOD-DEFINE=Type3]
+SOT@  /**
+   * [GET] ${businessKoreanName} 상세 조회
+   *
+   * @param ${parameterVars}
+   * @return ${businessKoreanName} 객체
+   */
+  @GetMapping(value = "/{${parameterVars}}")
+  public ResponseEntity<${domainClass}> get${businessEnglishName}(@PathVariable("${parameterVars}") ${parameterTypeAndVars}) {
+    return createResponseEntity(true, ${businessField}.get${businessEnglishName}(${parameterVars}));
+  }
+@EOT
+
+[METHOD-DEFINE=Type4]
+SOT@  /**
+   * [POST] ${businessKoreanName} 등록
+   *
+   * @param ${modelName}
+   * @return Void
+   */
+  @PostMapping
+  public ResponseEntity<Void> create${businessEnglishName}(@RequestBody ${domainClass} ${modelName}) {
+    return createResponseEntity(${businessField}.insert${domainClass}(${modelName}) > 0);
+  }
+@EOT
+
+[METHOD-DEFINE=Type5]
+SOT@  /**
+   * [PUT] ${businessKoreanName} 수정
+   *
+   * @param ${parameterVars}
+   * @param ${modelName}
+   * @return Void
+   */
+  @PutMapping(value = "/{${parameterVars}}")
+  public ResponseEntity<Void> modify${businessEnglishName}(@PathVariable("${parameterVars}") ${parameterTypeAndVars}, @RequestBody ${domainClass} ${modelName}) {
+    ${modelName}.set${capitalizedParameterVars}(${parameterVars});
+    return createResponseEntity(${businessField}.update${domainClass}(${modelName}) > 0);
+  }
+@EOT
+
+[METHOD-DEFINE=Type6]
+SOT@  /**
+   * [DELETE] ${businessKoreanName} 삭제
+   *
+   * @param ${parameterVars}
+   * @return Void
+   */
+  @DeleteMapping(value = "/{${parameterVars}}")
+  public ResponseEntity<Void> remove${businessEnglishName}(@PathVariable("${parameterVars}") ${parameterTypeAndVars}) {
+    return createResponseEntity(${businessField}.delete${domainClass}(${parameterVars}) > 0);
+  }
+@EOT

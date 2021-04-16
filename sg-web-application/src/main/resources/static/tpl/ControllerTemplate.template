@@ -1,0 +1,276 @@
+/**
+* encoding=UTF-8
+**/
+author						- 작성자
+creationDate				- 작성일자
+package					- 패키지
+className				- 객체명
+tableName				- 테이블명
+businessEnglishName		- 업무영문명
+businessKoreanName		- 업무한글명
+nameSpace				- 네임스페이스
+
+repositoryPackage				- Repository 패키지
+repositoryClass					- Repository 객체명 (패키지 미포함)
+repositoryClassFull			- Repository 객체명 (패키지 포함)
+
+businessPackage				- Service 패키지
+businessClass					- Service 객체명 (패키지 미포함)
+businessClassFull				- Service 객체명 (패키지 포함)
+
+domainPackage				- Domain 패키지
+domainClass					- Domain 객체명 (패키지 미포함)
+domainClassFull				- Domain 객체명 (패키지 포함)
+
+parameterTypes				- Parameter Types
+parameterVars					- Parameter Variables
+parameterTypeAndVars	- Parameter Type And Variables
+
+imports						- 구성 Import 영역 (복수)
+methods					- 구성 Method 영역 (복수)
+
+throws						- Method의 Thorws 절
+
+controllerMapName			- CONTROLLER 맵 이름
+jspPrefix					- Controller 내의 jsp 이름 prefix
+
+
+[CLASS-DEFINE=Type1]
+SOT@package ${package};
+
+${imports}
+
+/**
+ * ${businessKoreanName} 컨트롤러 클래스
+ *
+ * @author ${author}
+ * @since ${creationDate}
+ */
+@Controller
+@RequestMapping("/${controllerMapName}")
+public class ${className} extends BaseController {
+
+	@Autowired
+	private ${businessClass} ${businessField};
+
+	static final private String jspPath = "${controllerMapName}";
+${methods}
+}@EOT
+
+[IMPORT-DEFINE=Type1]
+SOT@import java.util.List;
+
+import javax.validation.Valid;
+
+import jxl.format.Colour;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.LinkedHashMap;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import ${basePackage}.core.common.PaginationInfo;
+${imports}
+@EOT
+
+[METHOD-DEFINE=Type1]
+SOT@	/**
+	 * ${businessKoreanName} 목록 조회
+	 *
+	 * @param vo
+	 * @param model
+	 * @return String "/${controllerMapName}/${jspPrefix}List"
+	 */
+	@RequestMapping("/${jspPrefix}List")
+	public String list(@ModelAttribute("vo") ${domainClass} vo, ModelMap model) {
+		int totalRecordCount = ${businessField}.get${businessEnglishName}Count(vo);
+
+		/** paging */
+		PaginationInfo paginationInfo = new PaginationInfo(vo.getPageNo(), totalRecordCount);
+		vo.setFirstIndex(paginationInfo.getFromNo()+1);
+		vo.setLastIndex(paginationInfo.getToNo());
+		vo.setDataPerPage(paginationInfo.getDataPerPage());
+
+		List<${domainClass}> list = ${businessField}.list${businessEnglishName}(vo);
+		this.setRowNums(list, totalRecordCount, paginationInfo.getFromNo());
+
+		model.addAttribute("list", list);
+		model.addAttribute("paginationInfo", paginationInfo);
+		return jspPath + "/${jspPrefix}List";
+	}
+@EOT
+
+[METHOD-DEFINE=Type2]
+SOT@	/**
+	 * ${businessKoreanName} 상세 조회
+	 *
+	 * @param vo
+	 * @param model
+	 * @return String "/${controllerMapName}/${jspPrefix}Detail"
+	 */
+	@RequestMapping("/${jspPrefix}Detail")
+	public String detail(@ModelAttribute("vo") ${domainClass} vo, ModelMap model) {
+		${domainClass} resultVO = ${businessField}.get${businessEnglishName}(vo);
+		model.addAttribute("result", resultVO);
+		return jspPath + "/${jspPrefix}Detail";
+	}
+@EOT
+
+[METHOD-DEFINE=Type3]
+SOT@	/**
+	 * ${businessKoreanName} 입력 폼
+	 *
+	 * @param vo
+	 * @param model
+	 * @return String "/${controllerMapName}/${jspPrefix}Update"
+	 */
+	@RequestMapping("/${jspPrefix}RegistView")
+	public String registView(@ModelAttribute("vo") ${domainClass} vo, ModelMap model) {
+		// return jspPath + "/${jspPrefix}Regist";
+		return jspPath + "/${jspPrefix}Update";
+	}
+@EOT
+
+[METHOD-DEFINE=Type4]
+SOT@	/**
+	 * ${businessKoreanName} 입력 처리
+	 *
+	 * @param vo
+	 * @param result
+	 * @param model
+	 * @return String "/${controllerMapName}/${jspPrefix}List"
+	 */
+	@RequestMapping("/${jspPrefix}Regist")
+	public String regist(@Valid @ModelAttribute("vo") ${domainClass} vo, BindingResult result, ModelMap model, RedirectAttributes reAttr) {
+		if(result.hasErrors()) {
+			model.addAttribute("result", vo);
+			model.addAttribute("msg", messageSource.getMessage("fail.check.value.msg"));
+			// return jspPath + "/${jspPrefix}Regist";
+			return jspPath + "/${jspPrefix}Update";
+		}
+
+		${businessField}.insert${businessEnglishName}(vo);
+		reAttr.addFlashAttribute("msg", messageSource.getMessage("success.save.msg"));
+		return "redirect:/" + jspPath + "/${jspPrefix}List";
+	}
+@EOT
+
+[METHOD-DEFINE=Type5]
+SOT@	/**
+	 * ${businessKoreanName} 수정 폼
+	 *
+	 * @param vo
+	 * @param model
+	 * @return String "/${controllerMapName}/${jspPrefix}Update"
+	 */
+	@RequestMapping("/${jspPrefix}UpdateView")
+	public String updateView(@ModelAttribute("vo") ${domainClass} vo, ModelMap model) {
+		${domainClass} resultVO = ${businessField}.get${businessEnglishName}(vo);
+		model.addAttribute("result", resultVO);
+		return jspPath + "/${jspPrefix}Update";
+	}
+@EOT
+
+[METHOD-DEFINE=Type6]
+SOT@	/**
+	 * ${businessKoreanName} 수정 처리
+	 *
+	 * @param vo
+	 * @param result
+	 * @param model
+	 * @return String
+	 */
+	@RequestMapping("/${jspPrefix}Update")
+	public String update(@Valid @ModelAttribute("vo") ${domainClass} vo, BindingResult result, ModelMap model, RedirectAttributes reAttr) {
+		if(result.hasErrors()) {
+			model.addAttribute("result", vo);
+			model.addAttribute("msg", messageSource.getMessage("fail.check.value.msg"));
+			return jspPath + "/${jspPrefix}Update";
+		}
+
+		${businessField}.update${businessEnglishName}(vo);
+		reAttr.addFlashAttribute("msg", messageSource.getMessage("success.save.msg"));
+		return "redirect:/" + jspPath + "/${jspPrefix}List";
+	}
+@EOT
+
+[METHOD-DEFINE=Type7]
+SOT@	/**
+	 * ${businessKoreanName} 삭제
+	 *
+	 * @param vo
+	 * @param model
+	 * @return String
+	 */
+	@RequestMapping("/${jspPrefix}Delete")
+	public String delete(@ModelAttribute("vo") ${domainClass} vo, ModelMap model) {
+
+		${businessField}.delete${businessEnglishName}(vo);
+		return "redirect:/" + jspPath + "/${jspPrefix}List";
+	}
+@EOT
+
+[METHOD-DEFINE=Type8]
+SOT@	/**
+	 * ${businessKoreanName} Excel Download
+	 *
+	 * @param vo
+	 * @param model
+	 * @return String
+	 */
+	@RequestMapping("/${jspPrefix}DownExcel")
+	public String downExcel(@ModelAttribute("vo") ${domainClass} vo, ModelMap model) {
+
+		int totalRecordCount = ${businessField}.get${businessEnglishName}Count(vo);
+
+		vo.setFirstIndex(0);
+		vo.setRecordCountPerPage(totalRecordCount);
+
+		List<${domainClass}> list = ${businessField}.get${businessEnglishName}List(vo);
+		Utility.setRowNums(list, totalRecordCount, 0);
+
+		// 엑셀데이터를 해쉬맵 형태로 정의합니다.
+		Map<String, Object> excelData = new HashMap<String, Object>();
+
+		// 엑셀파일명을 포팅 포팅될때는 파일이름 뒤에 날짜가 자동으로 붙는다 저장시 수정해 주면 됨. - 파일명은 타이틀명도 겸함.
+		excelData.put(ExcelConst.ExcelFileName, "${businessEnglishName}List");
+
+		// 셀의 가로크기를 정해 줍니다.(int) - 문자수기준
+		excelData.put(ExcelConst.ExcelCellWidth, 30);
+
+		// 컬럼헤더의 색상을 정해줍니다. jxl.format.Colour
+		excelData.put(ExcelConst.ExcelCellColor, Colour.LIGHT_ORANGE);
+
+		// 엑셀의 컬럼 헤드를 정의해 줍니다. 정의되는 VO 의 프로퍼티명(필드명,멤버변수명)을 Key로 반드시 지정해 주셔야 합니다.
+		// 또한, LikedHashMap<String,String> 으로 정의해 주셔야 합니다.
+		LinkedHashMap<String, String> columnHeader = new LinkedHashMap<String, String>();
+		columnHeader.put("id", "일련번호");
+		columnHeader.put("title", "제목");
+		columnHeader.put("content", "내용");
+		columnHeader.put("writer", "작성자");
+		columnHeader.put("readCnt", "조회수");
+		columnHeader.put("creId", "작성자");
+		columnHeader.put("creDt", "작성일");
+		columnHeader.put("updId", "수정자");
+		columnHeader.put("updDt", "수정일");
+
+		// 컬럼 헤드를 엑셀데이터에 담습니다.
+		excelData.put(ExcelConst.ColumnNameList, columnHeader);
+		// 실제 셀들의 데이터 값을 엑셀데이터에 담습니다.
+		excelData.put(ExcelConst.CellDataList, list);
+
+		model.addAttribute(ExcelConst.ExcelData, excelData);
+
+		// 엑셀 다운로드를 실행 합니다. ExcelConst.ExcelView 리턴은 고정입니다.
+		return ExcelConst.ExcelView;
+	}
+@EOT
+

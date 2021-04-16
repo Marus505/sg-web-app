@@ -1,0 +1,72 @@
+/**
+  * encoding=UTF-8
+  **/
+[ROOT-DEFINE=root]
+SOT@
+
+'use strict';
+
+angular.module('app.${jspPrefix}', [])
+.config(function ($stateProvider) {
+
+    $stateProvider
+	    .state('app.${jspPrefix}', {
+	        abstract: true,
+	        data: {
+	        	title: '${moduleKorean}'
+	        }
+	    })
+        .state('app.${jspPrefix}.list', {
+            url: '/${jspPrefix}/list',
+            data: {
+            	title: '${moduleKorean}'
+            },
+            views: {
+                "content@app": {
+                    templateUrl: 'app/${jspPrefix}/views/${jspPrefix}List.html',
+                    controller: '${jspPrefix}ListController'
+                }
+            }
+        })
+        .state('app.${jspPrefix}.insert', {
+        	url: '/${jspPrefix}/insert',
+        	data: {
+        		title: '${moduleKorean}'
+        	},
+        	views: {
+        		"content@app": {
+        			templateUrl: 'app/${jspPrefix}/views/${jspPrefix}View.html',
+ 					resolve : {
+						detail:function($http, $stateParams){
+							return {}; 
+						}
+					},
+        			controller: '${jspPrefix}ViewController'
+        		}
+        	}
+        })
+        /* View Controller 는 별도로 만들어야 됩니다. */
+        .state('app.${jspPrefix}.view', {
+            url: '/${jspPrefix}/view/:idx',
+            data: {
+            	title: '${moduleKorean}'
+            },
+            views: {
+                "content@app": {
+                    templateUrl: 'app/${jspPrefix}/views/${jspPrefix}View.html',
+ 					resolve : {
+						detail:function($http, $stateParams){
+							return $http({
+								method: 'POST',
+								url: '/${controllerMapName}/${jspPrefix}View.do',
+								data: {idx:$stateParams.idx}
+							}); 
+						}
+					},
+					controller: '${jspPrefix}ViewController'
+                }
+            }
+        })
+});
+
+@EOT

@@ -1,0 +1,145 @@
+/**
+* encoding=UTF-8
+**/
+author						- 작성자
+creationDate				- 작성일자
+package					- 패키지
+className				- 객체명
+tableName				- 테이블명
+businessEnglishName		- 업무영문명
+businessKoreanName		- 업무한글명
+nameSpace				- 네임스페이스
+
+repositoryPackage				- Repository 패키지
+repositoryClass					- Repository 객체명 (패키지 미포함)
+repositoryClassFull			- Repository 객체명 (패키지 포함)
+
+businessPackage				- Service 패키지
+businessClass					- Service 객체명 (패키지 미포함)
+businessClassFull				- Service 객체명 (패키지 포함)
+
+domainPackage				- Domain 패키지
+domainClass					- Domain 객체명 (패키지 미포함)
+domainClassFull				- Domain 객체명 (패키지 포함)
+
+parameterTypes				- Parameter Types
+parameterVars					- Parameter Variables
+parameterTypeAndVars	- Parameter Type And Variables
+
+imports						- 구성 Import 영역 (복수)
+methods					- 구성 Method 영역 (복수)
+
+throws						- Method의 Thorws 절
+
+controllerMapName			- CONTROLLER 맵 이름
+jspPrefix					- Controller 내의 jsp 이름 prefix
+
+
+[CLASS-DEFINE=Type1]
+SOT@package ${package};
+${imports}
+/**
+ * Class Name : ${businessEnglishName}ControllerTest.java
+ * Description : ${businessKoreanName} 컨트롤러 테스트 클래스
+ * Modification Information
+ *
+ * @author ${author}
+ * @since ${creationDate}
+ * @version 1.0
+ *
+ * Generated : Source Builder
+ */
+
+public class ${className}Test extends BaseTest {
+
+${methods}
+}@EOT
+
+[IMPORT-DEFINE=Type1]
+SOT@import static org.fest.assertions.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
+
+import org.junit.Test;
+
+import com.dsw.core.base.test.BaseTest;
+${imports}
+@EOT
+
+[METHOD-DEFINE=Type1]
+SOT@	/**
+	 * Test method for {@link ${package}.${className}#list(${domainPackage}.${domainClass}, org.springframework.ui.ModelMap)}.
+	 * @throws Exception
+	 */
+	@Test
+	public void testList() throws Exception {
+		this.mockMvc.perform(post("/${controllerMapName}/${jspPrefix}List"))
+		.andDo(print())
+		.andExpect(status().isOk());
+
+	}
+@EOT
+
+[METHOD-DEFINE=Type2]
+SOT@	/**
+	 * Test method for {@link ${package}.${className}#detail(${domainPackage}.${domainClass}, org.springframework.ui.ModelMap)}.
+	 * @throws Exception
+	 */
+	@Test
+	public void testDetail() throws Exception {
+		this.mockMvc.perform(post("/${controllerMapName}/${jspPrefix}Detail"))
+		.andDo(print())
+		.andExpect(status().isOk());
+	}
+@EOT
+
+[METHOD-DEFINE=Type3]
+SOT@	/**
+	 * Test method for {@link ${package}.${className}#registView(${domainPackage}.${domainClass}, org.springframework.ui.ModelMap)}.
+	 */
+	@Test
+	public void testRegistView() {
+		assertThat(true).isTrue();
+	}
+@EOT
+
+[METHOD-DEFINE=Type4]
+SOT@	/**
+	 * Test method for {@link ${package}.${className}#regist(${domainPackage}.${domainClass}, org.springframework.validation.BindingResult, org.springframework.ui.ModelMap)}.
+	 */
+	@Test
+	public void testRegist() {
+		assertThat(true).isTrue();
+	}
+@EOT
+
+[METHOD-DEFINE=Type5]
+SOT@	/**
+	 * Test method for {@link ${package}.${className}#update(${domainPackage}.${domainClass}, org.springframework.validation.BindingResult, org.springframework.ui.ModelMap)}.
+	 */
+	@Test
+	public void testUpdate() {
+		assertThat(true).isTrue();
+	}
+@EOT
+
+[METHOD-DEFINE=Type6]
+SOT@	/**
+	 * Test method for {@link ${package}.${className}#updateView(${domainPackage}.${domainClass}, org.springframework.ui.ModelMap)}.
+	 */
+	@Test
+	public void testUpdateView() {
+		assertThat(true).isTrue();
+	}
+@EOT
+
+[METHOD-DEFINE=Type7]
+SOT@	/**
+	 * Test method for {@link ${package}.${className}#delete(${domainPackage}.${domainClass}, org.springframework.ui.ModelMap)}.
+	 */
+	@Test
+	public void testDelete() {
+		assertThat(true).isTrue();
+	}
+@EOT
